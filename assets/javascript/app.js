@@ -13,13 +13,14 @@ var terminatorQuestions =
         question: "Which of the following statements best describes the purpose of the T-800 model of Terminator?",
         answers:
         [
-        "A: Concealment - Entering Resistance hideouts undetected to initiate combat from within.", 
-        "B: Peacekeeping - Actively maintaining a truce between the Resistance and Skynet.", 
-        "C: Kill Sarah Connor - Preventing the birth of John Connor and the future defeat of Skynet.", 
-        "D: Both A & C"
+            "A: Concealment - Entering Resistance hideouts undetected to initiate combat from within.", 
+            "B: Peacekeeping - Actively maintaining a truce between the Resistance and Skynet.", 
+            "C: Kill Sarah Connor - Preventing the birth of John Connor and the future defeat of Skynet.", 
+            "D: Both A & C"
         ],
         correctAnswer: 3,
-        gifImage: "assets"
+        correctAnswerGif: "assets/images/illBeBack.gif",
+        wrongAnswerGif: "assets/images/wrongAnswer.gif"
     },
     {
         questionDescription: "Question 2 refers to the following excerpt from a first-hand account of life after the historical event known as “Judgement Day” which occurred in 1997:",
@@ -27,38 +28,44 @@ var terminatorQuestions =
         question: "Which of the following statements best describes the course of the war against Skynet?",
         answers: 
         [
-        "A: Mankind quickly accomplished its goals in defeating Skynet and rebuilding society.", 
-        "B: Mankind quickly accomplished its goals in defeating Skynet but not in rebuilding society.", 
-        "C: Mankind quickly accomplished its goals in rebuilding society but not in defeating Skynet.", 
-        "D: Due to the use of time travel to change past events, mankind is caught in an infinitely repeating loop and unable to accomplish either goal."
+            "A: Mankind quickly accomplished its goals in defeating Skynet and rebuilding society.", 
+            "B: Mankind quickly accomplished its goals in defeating Skynet but not in rebuilding society.", 
+            "C: Mankind quickly accomplished its goals in rebuilding society but not in defeating Skynet.", 
+            "D: Due to the use of time travel to change past events, mankind is caught in an infinitely repeating loop and unable to accomplish either goal."
         ],
         correctAnswer: 3,
+        correctAnswerGif: "assets/images/futureWar.gif",
+        wrongAnswerGif: "assets/images/wrongAnswer.gif"
     },
     {
-        questionDescription: "Questions 3 refers to the following excerpt from a company analysis given by a reprogrammed Terminator in 1995 about Cyberdyne Systems Corporation:",
+        questionDescription: "Question 3 refers to the following excerpt from a company analysis given by a reprogrammed Terminator in 1995 about Cyberdyne Systems Corporation:",
         movieLine: "All stealth bombers will be upgraded with Cyberdyne computers, becoming fully unmanned. Afterwards, they fly with a perfect operational record. The Skynet funding bill is passed. The system goes online on August 4, 1997. Human decisions are removed from strategic defense, Skynet begins to learn at a geometric rate. It becomes self aware at 2:14AM eastern time August 29th. In the panic, they try to pull the plug ... It launches its missiles against their targets in Russia … Skynet knows that the Russian counter attack will eliminate its enemies over here.",
         question: "What consequences, if any, did the introduction of new defense network computers have in the late 20th century?",
         answers:
         [
-        "A: Growth in real wages for the lower/middle class and less economic inequality.", 
-        "B: The near extinction of mankind, a protracted war with the Machines, and the eventual discovery of time travel.", 
-        "C: None - Population levels decreased only slightly and for a brief period of time.", 
-        "D: All of the above"
+            "A: Growth in real wages for the lower/middle class and less economic inequality.", 
+            "B: The near extinction of mankind, a protracted war with the Machines, and the eventual discovery of time travel.", 
+            "C: None - Population levels decreased only slightly and for a brief period of time.", 
+            "D: All of the above"
         ],
         correctAnswer: 1,
+        correctAnswerGif: "assets/images/t2Arm.gif",
+        wrongAnswerGif: "assets/images/wrongAnswer.gif"
     },
     {
-        questionDescription: "Questions 4 refers to the following excerpt from a poorly written monologue by John Connor in what was the beginning of a downward spiral for a once well respected movie franchise.",
+        questionDescription: "Question 4 refers to the following excerpt from a poorly written monologue by John Connor in what was the beginning of a downward spiral for a once well respected movie franchise.",
         movieLine: "There was never any stopping it ... it could not be shut down. The attack began at 6:18PM, just as he said it would. Judgement Day... I should have realized, our destiny was never to stop Judgement Day. It was merely to survive it together ... He tried to tell us, but I didn't want to hear it. Maybe the future has been written, I don't know ... I never stopped fighting, and I never will. The battle has just begun.",
         question: "Which of the following statements best describes the relationship between the first two Terminator films and the subsequent films that followed in the franchise?",
         answers:
         [
-        "A: All subsequent films enjoyed similar levels of positive reviews and financial success.", 
-        "B: All subsequent films enjoyed similar financial success but received poor reviews.", 
-        "C: All subsequent films were steaming piles of excrement and, as far as I’m concerned, don’t even count as part of the once noble franchise.", 
-        "D: All subsequent films enjoyed similar positive reviews but did not achieve financial success."
+            "A: All subsequent films enjoyed similar levels of positive reviews and financial success.", 
+            "B: All subsequent films enjoyed similar financial success but received poor reviews.", 
+            "C: All subsequent films were steaming piles of excrement and, as far as I’m concerned, don’t even count as part of the once noble franchise.", 
+            "D: All subsequent films enjoyed similar positive reviews but did not achieve financial success."
         ],
         correctAnswer: 2,
+        correctAnswerGif: "assets/images/t1000Breaking.gif",
+        wrongAnswerGif: "assets/images/wrongAnswer.gif"
     }
 ];
 
@@ -70,30 +77,40 @@ function begin()
     showQuestion();
 }
 
-// setTimeout(twentyFiveSeconds, 1000 * 25);
 function showQuestion()
 {
     time = 14;
     intervalId = setInterval(sixtySeconds, 1000);
     $("#timer").html("15");
-    $("#questionNum").html("terminator");
-    $("#preExcerpt").html("terminator");
-    $("#excerpt").html("terminator");
-    $("#question").html("terminator");
-    $("#answers").html("terminator");
+    $("#questionNum").empty();
+    //$("#questionNum").html("Question:  " + (currentQuestion + 1));
+    $("#preExcerpt").text(terminatorQuestions[currentQuestion].questionDescription);
+    $("#excerpt").text(terminatorQuestions[currentQuestion].movieLine);
+    $("#question").text(terminatorQuestions[currentQuestion].question);
+    $("#terminated").empty();
+    $("#buttons").empty();
 
+    for (var i = 0; i < 4; i++)
+    {
+        var button = $("<button>");
+        button.attr("type", "button");
+        button.addClass("answerButtons");
+        button.attr("value", i);
+        button.text(terminatorQuestions[currentQuestion].answers[i]);
+        $("#buttons").append(button);
+    }
 }
 
 function sixtySeconds()
 {
     $("#timer").html(time);
     console.log(time);
-    time--;
 
-    if(time <= 9)
+    if(time <= 10)
     {
         audTimeLow.play();
     }
+
     if(time <= 0)
     {
         clearInterval(intervalId);
@@ -102,16 +119,44 @@ function sixtySeconds()
         audTimeUp.play();
         $("#timer").html("0");
         showAnswer();
-
     }
-
+    time--;
 }
 
 function showAnswer()
 {
-    $("#timer").html("15");
-    $("#questionNum").html("terminator");
+    clearInterval(intervalId);
+    intervalId = setInterval(nextQuestion, 3000);
+    $("#timer").html("0");
+    $("#questionNum").empty();
     $("#preExcerpt").html("<b>terminator</b>");
+    $("#excerpt").html("terminator");
+    $("#question").html("terminator");
+    $("#answers").html("terminator");
+}
+
+//function to lead to the next question or end the game//
+function nextQuestion()
+{
+    clearInterval(intervalId);
+    console.log("here");
+    currentQuestion++;
+    if (currentQuestion < terminatorQuestions.length)
+    {
+        showQuestion();
+    }
+    else
+    {
+        endExam();
+    }
+}
+
+function endExam()
+{
+    clearInterval(intervalId);
+    $("#timer").html("0");
+    $("#questionNum").empty();
+    $("#preExcerpt").html("<b>game over</b>");
     $("#excerpt").html("terminator");
     $("#question").html("terminator");
     $("#answers").html("terminator");
