@@ -1,15 +1,24 @@
 var gameState = "intro";
 var audTimeLow = new Audio("assets/audio/10SecondsLeft.mp3");
-var audTimeUp = new Audio("assets/audio/terminated.mp3");
+var rightAnswer = new Audio("assets/audio/affirmative.mp3");
+var incorrectAnswer = new Audio("assets/audio/wrong.mp3");
+var subSeventyFive = new Audio("assets/audio/sub75.mp3")
+//time variable is used to countdown time for each question.
 var time;
 var intervalId;
 var currentQuestion = 0;
+var isShowingAnswer = false;
+
+//These variables are used to track game score
+var correct = 0;
+var incorrect = 0;
+var timeOut = 0;
 
 var terminatorQuestions = 
 [
     {
         questionDescription: "Question 1 refers to the following excerpt from a 1984 technology lecture by Kyle Reese discussing cyborg technology that would emerge around the year 2029.",
-        movieLine: "The Terminator is an infiltration unit; part man, part machine. Underneath it's a hyperalloy combat chassis, microprocessor controlled, fully armored, very tough. But outside it's living human tissue. Flesh, skin, hair, blood. Grown for the cyborgs… The 600 series had rubber skin. We spotted them easy, but these are new, they look human.",
+        movieLine: "\"The Terminator is an infiltration unit; part man, part machine. Underneath it's a hyperalloy combat chassis, microprocessor controlled, fully armored, very tough. But outside it's living human tissue. Flesh, skin, hair, blood. Grown for the cyborgs… The 600 series had rubber skin. We spotted them easy, but these are new, they look human.\"",
         question: "Which of the following statements best describes the purpose of the T-800 model of Terminator?",
         answers:
         [
@@ -24,7 +33,7 @@ var terminatorQuestions =
     },
     {
         questionDescription: "Question 2 refers to the following excerpt from a first-hand account of life after the historical event known as “Judgement Day” which occurred in 1997:",
-        movieLine: "Most of us were rounded up, put in camps for orderly disposal. Burned in by laser scan. Some of us were kept alive to work. Loading bodies. The disposal units ran night and day. We were that close to going out forever. But there was one man who taught us to fight. To storm the wire of the camps. To smash those metal m----- f------ into junk. He turned it around. He brought us back from the brink. His name is Connor. John Connor.",
+        movieLine: "\"Most of us were rounded up, put in camps for orderly disposal. Burned in by laser scan. Some of us were kept alive to work. Loading bodies. The disposal units ran night and day. We were that close to going out forever. But there was one man who taught us to fight. To storm the wire of the camps. To smash those metal m----- f------ into junk. He turned it around. He brought us back from the brink. His name is Connor. John Connor.\"",
         question: "Which of the following statements best describes the course of the war against Skynet?",
         answers: 
         [
@@ -39,7 +48,7 @@ var terminatorQuestions =
     },
     {
         questionDescription: "Question 3 refers to the following excerpt from a company analysis given by a reprogrammed Terminator in 1995 about Cyberdyne Systems Corporation:",
-        movieLine: "All stealth bombers will be upgraded with Cyberdyne computers, becoming fully unmanned. Afterwards, they fly with a perfect operational record. The Skynet funding bill is passed. The system goes online on August 4, 1997. Human decisions are removed from strategic defense, Skynet begins to learn at a geometric rate. It becomes self aware at 2:14AM eastern time August 29th. In the panic, they try to pull the plug ... It launches its missiles against their targets in Russia … Skynet knows that the Russian counter attack will eliminate its enemies over here.",
+        movieLine: "\"All stealth bombers will be upgraded with Cyberdyne computers, becoming fully unmanned. Afterwards, they fly with a perfect operational record. The Skynet funding bill is passed. The system goes online on August 4, 1997. Human decisions are removed from strategic defense, Skynet begins to learn at a geometric rate. It becomes self aware at 2:14AM eastern time August 29th. In the panic, they try to pull the plug ... It launches its missiles against their targets in Russia … Skynet knows that the Russian counter attack will eliminate its enemies over here.\"",
         question: "What consequences, if any, did the introduction of new defense network computers have in the late 20th century?",
         answers:
         [
@@ -54,7 +63,7 @@ var terminatorQuestions =
     },
     {
         questionDescription: "Question 4 refers to the following excerpt from a poorly written monologue by John Connor in what was the beginning of a downward spiral for a once well respected movie franchise.",
-        movieLine: "There was never any stopping it ... it could not be shut down. The attack began at 6:18PM, just as he said it would. Judgement Day... I should have realized, our destiny was never to stop Judgement Day. It was merely to survive it together ... He tried to tell us, but I didn't want to hear it. Maybe the future has been written, I don't know ... I never stopped fighting, and I never will. The battle has just begun.",
+        movieLine: "\"There was never any stopping it ... it could not be shut down. The attack began at 6:18PM, just as he said it would. Judgement Day... I should have realized, our destiny was never to stop Judgement Day. It was merely to survive it together ... He tried to tell us, but I didn't want to hear it. Maybe the future has been written, I don't know ... I never stopped fighting, and I never will. The battle has just begun.\"",
         question: "Which of the following statements best describes the relationship between the first two Terminator films and the subsequent films that followed in the franchise?",
         answers:
         [
@@ -71,19 +80,24 @@ var terminatorQuestions =
 
 var startBtn = $("#startBtn");
 
-//Function for start button//
+//Function that initiates the exam.
 function begin()
 {
     showQuestion();
 }
 
+//Function that shows the questions and allows you to select answers.
 function showQuestion()
 {
-    time = 14;
+    isShowingAnswer = false;
+
+    //This section is where the timer function is called, 
+    time = 59; //With my function you have to set the time variable to one second less than you want in order for it to work.
     intervalId = setInterval(sixtySeconds, 1000);
-    $("#timer").html("15");
+    $("#timer").html("60");
+    //----------------------------------------------
+
     $("#questionNum").empty();
-    //$("#questionNum").html("Question:  " + (currentQuestion + 1));
     $("#preExcerpt").text(terminatorQuestions[currentQuestion].questionDescription);
     $("#excerpt").text(terminatorQuestions[currentQuestion].movieLine);
     $("#question").text(terminatorQuestions[currentQuestion].question);
@@ -96,27 +110,66 @@ function showQuestion()
         button.attr("type", "button");
         button.addClass("answerButtons");
         button.attr("value", i);
+        button.attr("id", "button" + i);
         button.text(terminatorQuestions[currentQuestion].answers[i]);
         $("#buttons").append(button);
+        //this is tying the function to the button.
+        $(".answerButtons").on('click', answerChosen);
     }
 }
 
+//This is the function that is used when the user either selects an answer or time runs out.
+function answerChosen()
+{
+    //Prevents button function from processing data after a selection has been made
+    if(isShowingAnswer)
+    {
+        console.log("button disabled");
+        return;
+    }
+
+    clearInterval(intervalId);
+
+    //"this" is referring to the button that was pressed
+    var buttonValue = $(this).attr("value");
+    //console.log(buttonValue);
+
+    //== can compare a string with a number
+    if (buttonValue == terminatorQuestions[currentQuestion].correctAnswer)
+    {
+        rightAnswer.play();
+        console.log("correct");
+        correct++;
+
+    }
+    else
+    {
+        incorrectAnswer.play();
+        console.log("incorrect");
+        incorrect++;
+    }
+    showAnswer();
+}
+
+//This is the function I built that counts down for each question. You won't be able to use this verbatim, but should point you in the right direction.
 function sixtySeconds()
 {
     $("#timer").html(time);
     console.log(time);
 
     if(time <= 10)
-    {
+    {   
+        //When the timer hits 10 seconds I set some music to play to let the user know that time is running out.
         audTimeLow.play();
     }
 
     if(time <= 0)
     {
+        //timeout variable is used to track the amount of questions that weren't answered due to not selecting anything in the time limit.
+        timeOut++;
         clearInterval(intervalId);
         audTimeLow.pause();
         audTimeLow.currentTime = 0;
-        audTimeUp.play();
         $("#timer").html("0");
         showAnswer();
     }
@@ -125,14 +178,25 @@ function sixtySeconds()
 
 function showAnswer()
 {
+    isShowingAnswer = true;
     clearInterval(intervalId);
     intervalId = setInterval(nextQuestion, 3000);
     $("#timer").html("0");
     $("#questionNum").empty();
-    $("#preExcerpt").html("<b>terminator</b>");
-    $("#excerpt").html("terminator");
-    $("#question").html("terminator");
-    $("#answers").html("terminator");
+    $("#answers").empty();
+
+    for (var i = 0; i < 4; i++)
+    {
+        if(terminatorQuestions[currentQuestion].correctAnswer === i)
+        {
+            $("#button" + i).attr("class", "correctButton");
+        }
+
+        else
+        {
+            $("#button" + i).attr("class", "incorrectButton");
+        }
+    }
 }
 
 //function to lead to the next question or end the game//
@@ -153,11 +217,39 @@ function nextQuestion()
 
 function endExam()
 {
+
+    var percent = correct/4 * 100;
+
     clearInterval(intervalId);
     $("#timer").html("0");
-    $("#questionNum").empty();
-    $("#preExcerpt").html("<b>game over</b>");
-    $("#excerpt").html("terminator");
-    $("#question").html("terminator");
-    $("#answers").html("terminator");
+    $("#questionNum").text("Correct: " + correct);
+    $("#preExcerpt").text("Incorrect: " + incorrect);
+    $("#excerpt").text("Unanswered: " + timeOut);
+    $("#question").text("Score: " + percent + "%");
+
+    $("#buttons").empty();
+
+    if(percent < 75)
+    {
+        $("#answers").html("Exam failed...");
+        subSeventyFive.play();
+    }
+    
+    var tryAgain = $("<button>");
+    tryAgain.attr("type", "button");
+    tryAgain.attr("id", "tryAgain");
+    tryAgain.addClass("mt-1 mb-1");
+    tryAgain.text("Take the Exam Again");
+    $("#buttons").append(tryAgain);
+    tryAgain.on("click", reset);
+
+}
+
+function reset()
+{
+    currentQuestion = 0;
+    correct = 0;
+    incorrect = 0;
+    timeOut = 0;
+    showQuestion();
 }
