@@ -1,8 +1,10 @@
 var gameState = "intro";
+//Game sound effects.
 var audTimeLow = new Audio("assets/audio/10SecondsLeft.mp3");
 var rightAnswer = new Audio("assets/audio/affirmative.mp3");
 var incorrectAnswer = new Audio("assets/audio/wrong.mp3");
-var subSeventyFive = new Audio("assets/audio/sub75.mp3")
+var timeUp = new Audio("assets/audio/terminated.mp3");
+var zeroPercent = new Audio("assets/audio/sub75.mp3");
 //time variable is used to countdown time for each question.
 var time;
 var intervalId;
@@ -14,6 +16,7 @@ var correct = 0;
 var incorrect = 0;
 var timeOut = 0;
 
+//array that exam questions are placed in
 var terminatorQuestions = 
 [
     {
@@ -78,8 +81,6 @@ var terminatorQuestions =
     }
 ];
 
-var startBtn = $("#startBtn");
-
 //Function that initiates the exam.
 function begin()
 {
@@ -92,17 +93,17 @@ function showQuestion()
     isShowingAnswer = false;
 
     //This section is where the timer function is called, 
-    time = 59; //With my function you have to set the time variable to one second less than you want in order for it to work.
+    time = 59; //With my function I had to set the time variable to one second less than you want in order for it to work.
     intervalId = setInterval(sixtySeconds, 1000);
     $("#timer").html("60");
     //----------------------------------------------
 
-    $("#questionNum").empty();
-    $("#preExcerpt").text(terminatorQuestions[currentQuestion].questionDescription);
-    $("#excerpt").text(terminatorQuestions[currentQuestion].movieLine);
-    $("#question").text(terminatorQuestions[currentQuestion].question);
+    $("#questionNum").html("<b>" + terminatorQuestions[currentQuestion].questionDescription + "</b>");
+    $("#preExcerpt").empty();
+    $("#excerpt").html(terminatorQuestions[currentQuestion].movieLine);
+    $("#question").empty();
     $("#terminated").empty();
-    $("#buttons").empty();
+    $("#buttons").text(terminatorQuestions[currentQuestion].question);
 
     for (var i = 0; i < 4; i++)
     {
@@ -140,7 +141,6 @@ function answerChosen()
         rightAnswer.play();
         console.log("correct");
         correct++;
-
     }
     else
     {
@@ -151,15 +151,15 @@ function answerChosen()
     showAnswer();
 }
 
-//This is the function I built that counts down for each question. You won't be able to use this verbatim, but should point you in the right direction.
+//timer function that is called when the question appears
 function sixtySeconds()
 {
     $("#timer").html(time);
     console.log(time);
 
+    //plays music when there is ten seconds left
     if(time <= 10)
     {   
-        //When the timer hits 10 seconds I set some music to play to let the user know that time is running out.
         audTimeLow.play();
     }
 
@@ -171,18 +171,19 @@ function sixtySeconds()
         audTimeLow.pause();
         audTimeLow.currentTime = 0;
         $("#timer").html("0");
+        timeUp.play();
         showAnswer();
     }
     time--;
 }
 
+//this function highlights the correct answer in green and the wrong ones in red
 function showAnswer()
 {
     isShowingAnswer = true;
     clearInterval(intervalId);
     intervalId = setInterval(nextQuestion, 3000);
     $("#timer").html("0");
-    $("#questionNum").empty();
     $("#answers").empty();
 
     for (var i = 0; i < 4; i++)
@@ -199,7 +200,7 @@ function showAnswer()
     }
 }
 
-//function to lead to the next question or end the game//
+//function that shows the next question or ends the game//
 function nextQuestion()
 {
     clearInterval(intervalId);
@@ -215,25 +216,20 @@ function nextQuestion()
     }
 }
 
+//function that shows your tallied score and creates a button to reset the game
 function endExam()
 {
-
     var percent = correct/4 * 100;
 
     clearInterval(intervalId);
-    $("#timer").html("0");
-    $("#questionNum").text("Correct: " + correct);
-    $("#preExcerpt").text("Incorrect: " + incorrect);
-    $("#excerpt").text("Unanswered: " + timeOut);
-    $("#question").text("Score: " + percent + "%");
+
+    $("#questionNum").empty()
+    $("#preExcerpt").text("Correct: " + correct);
+    $("#excerpt").text("Incorrect: " + incorrect);
+    $("#question").text("Unanswered: " + timeOut);
+    $("#terminated").text("Score: " + percent + "%");
 
     $("#buttons").empty();
-
-    if(percent < 75)
-    {
-        $("#answers").html("Exam failed...");
-        subSeventyFive.play();
-    }
     
     var tryAgain = $("<button>");
     tryAgain.attr("type", "button");
@@ -243,8 +239,32 @@ function endExam()
     $("#buttons").append(tryAgain);
     tryAgain.on("click", reset);
 
+    scoreResponse();
 }
 
+function scoreResponse()
+{
+    var percent = correct/4 * 100;
+
+    if(percent >= 75)
+    {
+        $("#timer").text("You passed congratulations!");
+    }
+
+    else if(percent < 75 && percent > 25)
+    {
+        $("#timer").text("You failed.");   
+    }
+
+    else
+    {
+        $("#timer").text("Couldn't even get one...");
+        //easter egg sound effect for getting a 0. It's stupid, but I thought it was kind of funny...
+        zeroPercent.play();
+    }
+}
+
+//function that resets the game
 function reset()
 {
     currentQuestion = 0;
