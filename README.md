@@ -2,7 +2,7 @@
 
 What is this project?
 
-I formatted this trivia game to look like an AP US History exam that someone would take in high school. I thought it would be kinda funny and way to help me understand the array I had to build for the project a little better. I went to AP History practice test sites, found questions, and changed them to bring in stuff from the Terminator movies...
+I formatted this trivia game to look like an AP US History exam that someone would take in high school. I thought it would be kinda funny and a way to help me understand the array I had to build for the project a little better. I went to AP History practice test sites, found questions, and changed them to bring in stuff from the Terminator movies...
 
 Why is this project useful?
 
